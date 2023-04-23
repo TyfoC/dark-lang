@@ -1,0 +1,11 @@
+int8_t<-128...127>
+int16_t<-32768...32767>
+int32_t<...>
+int64_t<...>
+int_t<...>
+uint8_t<0...255>
+uint16_t<0...65535>
+uint32_t<0...>
+uint64_t<0...>
+uint_t<0...>
+bool_t<false, true>

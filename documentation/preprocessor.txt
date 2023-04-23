@@ -1,0 +1,24 @@
+Operators:
+@x
+<{ - open preprocessor block
+}> - close preprocessor block
+... - list of arguments
+defined(x)
+inserted(x)
+
+@def NAME <{EXPRESSION}>
+@def NAME(ARG1, ARGUMENT2, ...) <{
+	EXPRESSION
+	`...` = EXARGUMENTS
+	EXCOUNT - count of `...` EXARGUMENTS
+}>
+@undef NAME
+
+@if EXPRESSION
+	EXPRESSION
+@elif EXPRESSION
+	EXPRESSION
+@endif
+
+@locins "local file path"
+@sysins "system file path"
