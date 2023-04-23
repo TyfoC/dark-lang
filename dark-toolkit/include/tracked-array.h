@@ -26,10 +26,12 @@
 #define TRACKED_ARRAY_APPEND($tracked_array_memory, $type_name, $element)				TRACKED_ARRAY_INSERT($tracked_array_memory, $type_name, $element, TRACKED_ARRAY_GET_LENGTH($tracked_array_memory))
 #define TRACKED_ARRAY_REMOVE($tracked_array_memory, $type_name, $index)					(($type_name*)__tracked_array_remove($tracked_array_memory, $index))
 #define TRACKED_ARRAY_FIND($tracked_array_memory, $element)								(($type_name*)__tracked_array_find($tracked_array_memory, &$element))
-#define TRACKED_ARRAY_BEGIN($tracked_array_memory, $type_name)							(($type_name)$tracked_array_memory)
-#define TRACKED_ARRAY_END($tracked_array_memory, $type_name)							(($type_name)__tracked_array_end($tracked_array_memory))
+#define TRACKED_ARRAY_BEGIN($tracked_array_memory, $type_name)							(($type_name*)$tracked_array_memory)
+#define TRACKED_ARRAY_END($tracked_array_memory, $type_name)							(($type_name*)__tracked_array_end($tracked_array_memory))
 #define TRACKED_ARRAY_ADDRESS_OF($tracked_array_memory, $index)							((size_t)__tracked_array_address_of($tracked_array_memory, $index))
-#define TRACKED_ARRAY_REVERSE($tracked_array_memory, $type_name)						(($type_name)__tracked_array_reverse($tracked_array_memory))
+#define TRACKED_ARRAY_REVERSE($tracked_array_memory, $type_name)						(($type_name*)__tracked_array_reverse($tracked_array_memory))
+#define TRACKED_ARRAY_CONCAT($first_tracked_array_memory, $second_tracked_array_memory, $type_name)\
+	(($type_name*)__tracked_array_concat($first_tracked_array_memory, $second_tracked_array_memory))
 
 typedef struct tracked_array_data_t {
 	uint32_t	signature;
@@ -49,5 +51,6 @@ size_t __tracked_array_find(void* tracked_array_memory, void* element);
 void* __tracked_array_end(void* tracked_array_memory);
 size_t __tracked_array_address_of(void* tracked_array_memory, size_t index);
 void* __tracked_array_reverse(void* tracked_array_memory);
+void* __tracked_array_concat(void* first_tracked_array_memory, void* second_tracked_array_memory);
 
 #endif

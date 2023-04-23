@@ -58,7 +58,6 @@ void* __tracked_array_split(void* tracked_array_memory, size_t index) {
 		void* tmp_array = __tracked_array_realloc(tracked_array_memory, index);
 		if(!tmp_array) return false;
 
-		__tracked_array_free(tracked_array_memory);
 		tracked_array_memory = tmp_array;
 		tracked_array_data = (tracked_array_data_t*)((size_t)tracked_array_memory - sizeof(tracked_array_data_t));
 	}
@@ -80,8 +79,6 @@ void* __tracked_array_split(void* tracked_array_memory, size_t index) {
 		new_element_address += tracked_array_data->element_size;
 		old_element_address += tracked_array_data->element_size;
 	}
-
-	__tracked_array_free(tracked_array_memory);
 
 	return new_tracked_array_memory;
 }
@@ -117,8 +114,6 @@ void* __tracked_array_remove(void* tracked_array_memory, size_t index) {
 		old_element_address += tracked_array_data->element_size;
 	}
 
-	__tracked_array_free(tracked_array_memory);
-
 	return new_tracked_array_memory;
 }
 
@@ -153,12 +148,41 @@ void* __tracked_array_reverse(void* tracked_array_memory) {
 	tracked_array_data_t* tracked_array_data = (tracked_array_data_t*)((size_t)tracked_array_memory - sizeof(tracked_array_data_t));
 	if (tracked_array_data->signature != TRACKED_ARRAY_SIGNATURE) return false;
 
-	size_t begin_address = (size_t)tracked_array_memory, end_address = (size_t)__tracked_array_end(tracked_array_memory) - tracked_array_data->element_size;
-	while (begin_address + tracked_array_data->element_size <= end_address) {
-		DYNAMIC_MEMCPY((void*)begin_address, (void*)end_address, tracked_array_data->element_size);
-		begin_address += tracked_array_data->element_size;
-		end_address -= tracked_array_data->element_size;
+	void* new_tracked_array_memory = __tracked_array_alloc(tracked_array_data->element_size, tracked_array_data->array_length);
+	if (!new_tracked_array_memory) return false;
+
+	size_t destination_address = (size_t)new_tracked_array_memory, source_address = (size_t)__tracked_array_end(tracked_array_memory) - tracked_array_data->element_size;
+	for (size_t i = 0; i < tracked_array_data->array_length; i++) {
+		DYNAMIC_MEMCPY((void*)destination_address, (void*)source_address, tracked_array_data->element_size);
+		destination_address += tracked_array_data->element_size;
+		source_address -= tracked_array_data->element_size;
 	}
 
-	return tracked_array_memory;
+	return new_tracked_array_memory;
+}
+
+void* __tracked_array_concat(void* first_tracked_array_memory, void* second_tracked_array_memory) {
+	tracked_array_data_t* first_tracked_array_data = (tracked_array_data_t*)((size_t)first_tracked_array_memory - sizeof(tracked_array_data_t));
+	tracked_array_data_t* second_tracked_array_data = (tracked_array_data_t*)((size_t)second_tracked_array_memory - sizeof(tracked_array_data_t));
+	if (first_tracked_array_data->signature != TRACKED_ARRAY_SIGNATURE || second_tracked_array_data->signature != TRACKED_ARRAY_SIGNATURE) return false;
+
+	void* new_tracked_array_memory = __tracked_array_alloc(first_tracked_array_data->element_size, first_tracked_array_data->array_length + second_tracked_array_data->array_length);
+	if (!new_tracked_array_memory) return false;
+
+	size_t old_element_address = (size_t)first_tracked_array_memory;
+	size_t new_element_address = (size_t)new_tracked_array_memory;
+	for (size_t i = 0; i < first_tracked_array_data->array_length; i++) {
+		DYNAMIC_MEMCPY((void*)new_element_address, (void*)old_element_address, first_tracked_array_data->element_size);
+		old_element_address += first_tracked_array_data->element_size;
+		new_element_address += first_tracked_array_data->element_size;
+	}
+
+	old_element_address = (size_t)second_tracked_array_memory;
+	for (size_t i = 0; i < first_tracked_array_data->array_length; i++) {
+		DYNAMIC_MEMCPY((void*)new_element_address, (void*)old_element_address, first_tracked_array_data->element_size);
+		old_element_address += first_tracked_array_data->element_size;
+		new_element_address += first_tracked_array_data->element_size;
+	}
+
+	return new_tracked_array_memory;
 }
