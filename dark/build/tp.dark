@@ -1,4 +1,4 @@
-@sysinc "conio"
+<!@sysinc "conio"! - error>
 @set IntValue		15645 + 0x2234 - 0o3 * 4 / 05 % 6
 
 @set AOE			4234234 * IntValue

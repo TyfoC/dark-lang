@@ -81,6 +81,18 @@ namespace Dark {
 		IDENTIFIER,
 	} TokenType_t, LexemeType_t;
 
+	enum MessageType_t : size_t {
+		INFORMATION,
+		WARNING,
+		ERROR
+	};
+
+	typedef struct Message_t {
+		MessageType_t	Type;
+		size_t			Line;
+		std::string		Text;
+	} Message_t;
+
 	const std::vector<Lexer::Lexeme_t> Lexemes = {
 		{ SPACE, R"([ \t\f])" },
 		{ NEW_LINE, R"((\r\n|\n\r|\r|\n))" },
