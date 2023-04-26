@@ -1,0 +1,13 @@
+@sysinc "conio"
+@set IntValue		15645 + 0x2234 - 0o3 * 4 / 05 % 6
+
+@set AOE			4234234 * IntValue
+
+<!
+	main function - entry point
+!>
+sval_t main() {
+	asm("mov ds, ax; mov es, ax", ax = 0, cx = 7);	<! Inline assembly !>
+
+	sval8_t result = IntValue + AOE;				<! This is return value !>
+} ~> (result - 1 + szbits(sval16_t));
