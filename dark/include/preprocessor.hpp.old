@@ -1,0 +1,30 @@
+#pragma once
+#ifndef __PREPROCESSOR__
+#define __PREPROCESSOR__
+
+#include "common.hpp"
+
+namespace Dark {	
+	class Preprocessor {
+		public:
+		enum SymbolType_t : size_t {
+			MACRO_CONSTANT,
+			MACRO_FUNCTION
+		};
+
+		typedef struct Symbol_t {
+			static size_t FindName(const std::vector<Symbol_t>& symbols, const std::string value);
+
+			SymbolType_t				Type;
+			std::string					Name;
+			std::vector<Lexer::Token_t>	Arguments;
+			std::vector<Lexer::Token_t>	Expression;
+		} Symbol_t;
+
+		static size_t FindSymbolInTokens(const std::vector<Lexer::Token_t>& tokens, std::vector<Symbol_t>& symbols, size_t start_index = 0);
+		static std::vector<Lexer::Token_t> ExpandSymbolsInTokens(const std::vector<Lexer::Token_t>& tokens, std::vector<Symbol_t>& symbols, const std::vector<Lexer::Lexeme_t>& lexemes = Lexemes);
+		static std::vector<Lexer::Token_t> Preprocess(std::vector<Message_t>& messages, const std::vector<Lexer::Token_t>& tokens, const std::vector<Lexer::Lexeme_t>& lexemes = Lexemes);
+	};
+}
+
+#endif

@@ -1,0 +1,171 @@
+#include <preprocessor.hpp>
+
+size_t Dark::Preprocessor::Symbol_t::FindName(const std::vector<Symbol_t>& symbols, const std::string value) {
+	const size_t symbols_count = symbols.size();
+	for (size_t i = 0; i < symbols_count; i++) if (symbols[i].Name == value) return i;
+	return std::string::npos;
+}
+
+size_t Dark::Preprocessor::FindSymbolInTokens(const std::vector<Lexer::Token_t>& tokens, std::vector<Symbol_t>& symbols, size_t start_index) {
+	const size_t tokens_count = tokens.size();
+	size_t symbol_index;
+	for (size_t i = start_index; i < tokens_count; i++) {
+		if (tokens[i].Type == IDENTIFIER) {
+			symbol_index = Symbol_t::FindName(symbols, tokens[i].Value);
+			if (symbol_index != std::string::npos) return i;
+		}
+	}
+	return std::string::npos;
+}
+
+std::vector<Dark::Lexer::Token_t> Dark::Preprocessor::ExpandSymbolsInTokens(const std::vector<Lexer::Token_t>& tokens, std::vector<Symbol_t>& symbols, const std::vector<Lexer::Lexeme_t>& lexemes) {
+	std::vector<Lexer::Token_t> result = {}, tmp = {};
+	const size_t tokens_count = tokens.size();
+	size_t symbol_table_index, symbol_index;
+	for (size_t i = 0; i < tokens_count; i++) {
+		if (tokens[i].Type == IDENTIFIER) {
+			symbol_table_index = Symbol_t::FindName(symbols, tokens[i].Value);
+			if (symbol_table_index == std::string::npos) {
+				result.push_back(tokens[i]);
+				continue;
+			}
+
+			tmp = symbols[symbol_table_index].Expression;
+			do {
+				symbol_index = FindSymbolInTokens(tmp, symbols);
+				if (symbol_index == std::string::npos) break;
+
+				tmp = ExpandSymbolsInTokens(tmp, symbols, lexemes);
+			} while (1);
+
+			result.insert(result.end(), tmp.begin(), tmp.end());
+			tmp.clear();
+			continue;
+		}
+		
+		result.push_back(tokens[i]);
+	}
+
+	return result;
+}
+
+std::vector<Dark::Lexer::Token_t> Dark::Preprocessor::Preprocess(std::vector<Message_t>& messages, const std::vector<Lexer::Token_t>& tokens, const std::vector<Lexer::Lexeme_t>& lexemes) {
+	std::vector<Lexer::Token_t> cleaned = {}, result = {}, tmp = {}, sub_tmp = {};
+	std::vector<Symbol_t> symbols = {};
+	Symbol_t symbol = {};
+	size_t index, sub_index, line = 1;
+	size_t tokens_count = tokens.size();
+
+	for (size_t i = 0; i < tokens_count; i++) if (tokens[i].Type != SPACE && tokens[i].Type != COMMENTARY) cleaned.push_back(tokens[i]);
+
+	tokens_count = cleaned.size();
+	for (size_t i = 0; i < tokens_count; i++) {
+		if (cleaned[i].Type == NEW_LINE) ++line;
+		else if (cleaned[i].Type == OPERATOR_PREPROCESSOR_DIRECTIVE) {
+			++i;
+			if (i >= tokens_count || cleaned[i].Type != IDENTIFIER) {
+				messages.push_back({ ERROR, line, "Preprocessor directive omitted" });
+				continue;
+			}
+
+			if (cleaned[i].Value == "set") {
+				++i;
+				if (i >= tokens_count || cleaned[i].Type != IDENTIFIER) {
+					messages.push_back({ ERROR, line, "Preprocessor directive `set` not completed" });
+					continue;
+				}
+
+				symbol.Name = cleaned[i].Value;
+				symbol.Arguments.clear();
+				symbol.Expression.clear();
+
+				++i;
+				if (i >= tokens_count) {
+					symbol.Type = MACRO_CONSTANT;
+					symbols.push_back(symbol);
+					break;
+				}
+
+				if (cleaned[i].Type == PARENTHESIS_LEFT) {
+					symbol.Type = MACRO_FUNCTION;
+					++i;
+					index = Lexer::Token_t::GetIndexByTypes(cleaned, { PARENTHESIS_RIGHT }, i);
+					if (index == std::string::npos) {
+						messages.push_back({ ERROR, line, "Function macro arguments must be closed with a parenthesis" });
+						break;
+					}
+
+					while (i < index) {
+						if (cleaned[i].Type == IDENTIFIER) symbol.Arguments.push_back(cleaned[i]);
+						else if (cleaned[i].Type == OPERATOR_COMMA && cleaned[i - 1].Type == OPERATOR_COMMA) {
+							messages.push_back({ ERROR, line, "Missing argument before comma" });
+							break;
+						}
+						else if (cleaned[i].Type != OPERATOR_COMMA && cleaned[i].Type != NEW_LINE) {
+							messages.push_back({ ERROR, line, "This type must not be specified in the arguments of a function macro definition" });
+							break;
+						}
+						++i;
+					}
+
+					i = index + 1;
+					index = Lexer::Token_t::GetIndexByTypes(cleaned, { NEW_LINE }, i);
+					if (index == std::string::npos) index = tokens_count;
+
+					for (; i < index; i++) symbol.Expression.push_back(cleaned[i]);
+					symbols.push_back(symbol);
+				}
+				else {
+					index = Lexer::Token_t::GetIndexByTypes(cleaned, { NEW_LINE }, i);
+					if (index == std::string::npos) index = tokens_count;
+					for (; i < index; i++) symbol.Expression.push_back(cleaned[i]);
+					symbols.push_back(symbol);
+				}
+			}
+			else messages.push_back({ ERROR, line, "Unknown preprocessor directive" });
+		}
+		else if (cleaned[i].Type == IDENTIFIER) {
+			index = Symbol_t::FindName(symbols, cleaned[i].Value);
+			if (index == std::string::npos) {
+				result.push_back(cleaned[i]);
+				continue;
+			}
+
+			symbol = symbols[index];
+
+			if (symbol.Type == MACRO_CONSTANT) {
+				tmp.push_back(cleaned[i]);
+				tmp = ExpandSymbolsInTokens(tmp, symbols, lexemes);
+				result.insert(result.end(), tmp.begin(), tmp.end());
+				tmp.clear();
+			}
+			else {
+				i = Lexer::Token_t::GetIndexByTypes(cleaned, { PARENTHESIS_LEFT }, i);
+				if (i == std::string::npos) {
+					messages.push_back({ ERROR, line, "Using a function macro with no arguments" });
+					break;
+				}
+
+				index = Lexer::Token_t::GetIndexByTypes(cleaned, { PARENTHESIS_RIGHT }, i);
+				if (index == std::string::npos) {
+					messages.push_back({ ERROR, line, "Function macro arguments must be closed with a parenthesis" });
+					break;
+				}
+
+				for (size_t j = 0; j < symbol.Expression.size(); j++) {
+					if (symbol.Expression[i].Type == IDENTIFIER) {
+						sub_index = Symbol_t::FindName(symbols, symbol.Arguments[i].Value);
+						if (sub_index == std::string::npos) {
+							tmp.push_back();
+						}
+					}
+				}
+
+				tmp.clear();
+			}
+		}
+		else result.push_back(cleaned[i]);
+	}
+
+	return result;
+}

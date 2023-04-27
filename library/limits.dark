@@ -1,0 +1,34 @@
+@protinc
+@set __LIMITS__<@<! limits.dark included !>@>
+
+@set SVAL8_MIN	-128
+@set SVAL16_MIN	-32768
+@set SVAL32_MIN	-2147483648
+@set SVAL64_MIN	–9223372036854775808
+@set SVAL8_MAX	127
+@set SVAL16_MAX	32767
+@set SVAL32_MAX	2147483647
+@set SVAL64_MAX	9223372036854775807
+
+@set UVAL8_MAX	255
+@set UVAL16_MAX	65535
+@set UVAL32_MAX	4294967295
+@set UVAL64_MAX	18446744073709551615
+
+@if typesz(sval_t) == 2 -> <@
+	@set SVAL_MIN	SVAL16_MIN
+	@set SVAL_MAX	SVAL16_MAX
+	@set UVAL_MAX	UVAL16_MAX
+@> @elif typesz(sval_t) == 4
+	@set SVAL_MIN	SVAL32_MIN
+	@set SVAL_MAX	SVAL32_MAX
+	@set UVAL_MAX	UVAL32_MAX
+@> @elif typesz(sval_t) == 8
+	@set SVAL_MIN	SVAL64_MIN
+	@set SVAL_MAX	SVAL64_MAX
+	@set UVAL_MAX	UVAL64_MAX
+@> @else <@
+	@set SVAL_MIN	SVAL8_MIN
+	@set SVAL_MAX	SVAL8_MAX
+	@set UVAL_MAX	UVAL8_MAX
+@>

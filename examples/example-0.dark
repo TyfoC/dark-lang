@@ -1,0 +1,9 @@
+@sysinc "limits.dark"
+
+<!
+	sval_t main() - entry point
+	sval_t - builtin type
+!>
+sval_t main() {
+	return SVAL_MIN + typesz(uval_t);	<! return value from function !>
+}
