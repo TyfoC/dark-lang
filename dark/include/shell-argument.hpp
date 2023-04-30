@@ -9,10 +9,10 @@ namespace Shell {
 		public:
 		enum Type : size_t {
 			TYPE_VALUE,			//	askfakjsf/file.ext/21361273/...
-			TYPE_OPTION,		//	-option
-			TYPE_SUBOPTION,		//	--suboption
-			TYPE_PARAMETER,		//	-parameter=value
-			TYPE_SUBPARAMETER,	//	--subparameter=value
+			TYPE_OPTION,		//	:option
+			TYPE_SUBOPTION,		//	::suboption
+			TYPE_PARAMETER,		//	:parameter=value
+			TYPE_SUBPARAMETER,	//	::subparameter=value
 		};
 
 		enum TokenType : size_t {

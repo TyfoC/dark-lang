@@ -2,10 +2,10 @@
 
 const std::vector<Dark::Token> Shell::Argument::Lexemes = {
 	{ Shell::Argument::TOKEN_TYPE_OPERATOR_SPACE, R"([ \t\v\r\n\f]+)" },
-	{ Shell::Argument::TOKEN_TYPE_OPERATOR_PRIORITY, R"(-)" },
+	{ Shell::Argument::TOKEN_TYPE_OPERATOR_PRIORITY, R"(\:)" },
 	{ Shell::Argument::TOKEN_TYPE_OPERATOR_ASSIGN, R"(=)" },
 	{ Shell::Argument::TOKEN_TYPE_OPERATOR_COMMA, R"(,)" },
-	{ Shell::Argument::TOKEN_TYPE_VALUE, R"([\w~`!@"#№\$;%\^\:&\?\*\(\)-\+\[\]\{\}'\|\\\/<>.]+)" },
+	{ Shell::Argument::TOKEN_TYPE_VALUE, R"([\w~`!@"#№\$;%\^&\?\*\(\)\-\+\[\]\{\}'\|\\\/<>.]+)" },
 	{ Shell::Argument::TOKEN_TYPE_EXTENDED_VALUE, R"("(\\[\s\S]|[^\"])*")" },
 };
 
@@ -55,7 +55,7 @@ std::vector<Shell::Argument> Shell::Argument::Process(const std::string source, 
 	bool unknown_token;
 
 	for (; index < tokens_count; index++) {									//	remove space & new line symbols
-		if (tokens[index].GetTypeIndex() == TOKEN_TYPE_OPERATOR_SPACE) {
+		if (tokens[index].GetType() == TOKEN_TYPE_OPERATOR_SPACE) {
 			tokens.erase(tokens.begin() + index);
 			--index;
 			--tokens_count;
@@ -64,26 +64,26 @@ std::vector<Shell::Argument> Shell::Argument::Process(const std::string source, 
 
 	index = 0;
 	while (index < tokens_count) {
-		if(tokens[index].GetTypeIndex() == TOKEN_TYPE_OPERATOR_PRIORITY) {
+		if(tokens[index].GetType() == TOKEN_TYPE_OPERATOR_PRIORITY) {
 			++index;
 			if (index >= tokens_count) break;
 
-			argument.SetType(tokens[index].GetTypeIndex() == TOKEN_TYPE_OPERATOR_PRIORITY ? TYPE_SUBOPTION : TYPE_OPTION);
-			while (tokens[index].GetTypeIndex() == TOKEN_TYPE_OPERATOR_PRIORITY && index < tokens_count) ++index;
+			argument.SetType(tokens[index].GetType() == TOKEN_TYPE_OPERATOR_PRIORITY ? TYPE_SUBOPTION : TYPE_OPTION);
+			while (tokens[index].GetType() == TOKEN_TYPE_OPERATOR_PRIORITY && index < tokens_count) ++index;
 			if (index >= tokens_count) break;
 
-			if (tokens[index].GetTypeIndex() == TOKEN_TYPE_VALUE) argument.SetName(tokens[index++].GetValue());
+			if (tokens[index].GetType() == TOKEN_TYPE_VALUE) argument.SetName(tokens[index++].GetValue());
 			if (index >= tokens_count) {
 				result.push_back(argument);
 				break;
 			}
 
-			if (tokens[index].GetTypeIndex() != TOKEN_TYPE_OPERATOR_ASSIGN) {
+			if (tokens[index].GetType() != TOKEN_TYPE_OPERATOR_ASSIGN) {
 				result.push_back(argument);
 				continue;
 			}
 
-			while (tokens[index].GetTypeIndex() == TOKEN_TYPE_OPERATOR_ASSIGN && index < tokens_count) ++index;
+			while (tokens[index].GetType() == TOKEN_TYPE_OPERATOR_ASSIGN && index < tokens_count) ++index;
 			if (index >= tokens_count) {
 				result.push_back(argument);
 				break;
@@ -91,7 +91,7 @@ std::vector<Shell::Argument> Shell::Argument::Process(const std::string source, 
 
 			unknown_token = false;
 			while (index < tokens_count) {
-				switch (tokens[index].GetTypeIndex()) {
+				switch (tokens[index].GetType()) {
 					case TOKEN_TYPE_VALUE:
 						argument.AppendValues({ tokens[index].GetValue() });
 						break;
@@ -114,13 +114,13 @@ std::vector<Shell::Argument> Shell::Argument::Process(const std::string source, 
 			if (index >= tokens_count) break;
 			continue;
 		}
-		else if (tokens[index].GetTypeIndex() == TOKEN_TYPE_VALUE) {
+		else if (tokens[index].GetType() == TOKEN_TYPE_VALUE) {
 			argument.SetType(TYPE_VALUE);
 			argument.SetName(tokens[index].GetValue());
 			argument.SetValues({});
 			result.push_back(argument);
 		}
-		else if (tokens[index].GetTypeIndex() == TOKEN_TYPE_EXTENDED_VALUE) {
+		else if (tokens[index].GetType() == TOKEN_TYPE_EXTENDED_VALUE) {
 			argument.SetType(TYPE_VALUE);
 			argument.SetName(tokens[index].GetValue().substr(1, tokens[index].GetValue().length() - 2));
 			argument.SetValues({});

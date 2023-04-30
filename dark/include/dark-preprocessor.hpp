@@ -2,7 +2,6 @@
 #ifndef DARK_PREPROCESSOR_HPP
 #define DARK_PREPROCESSOR_HPP
 
-#include "dark-message.hpp"
 #include "dark-config.hpp"
 
 namespace Dark {
@@ -12,7 +11,7 @@ namespace Dark {
 			const std::vector<Token> tokens,
 			std::vector<Message>& messages,
 			std::string file_directory_path = "",
-			std::vector<std::string> system_include_paths = {},
+			std::vector<std::string> include_paths = {},
 			const std::vector<Token> lexemes = Lexemes
 		);
 	};

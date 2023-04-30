@@ -14,7 +14,7 @@ std::vector<Dark::Token> Dark::Lexer::Lex(const std::string source, const std::v
 		for (const Token& lexeme : lexemes) {
 			expression = std::regex(lexeme.GetValue());
 			if (std::regex_search(destination, expression_match, expression) && !expression_match.position()) {
-				result.push_back({ lexeme.GetTypeIndex(), expression_match.str() });
+				result.push_back({ lexeme.GetType(), expression_match.str() });
 				value_length = result.back().GetValue().length();
 				position += value_length;
 				expression_found = true;
