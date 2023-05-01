@@ -22,9 +22,6 @@ int main(int argc, char** argv) {
 		argument_name = argument.GetName();
 		argument_values = argument.GetValues();
 
-		std::cout << argument_type << ')' << argument_name << std::endl;
-		for (const std::string& value : argument_values) std::cout << value << std::endl;
-
 		if (argument_type == Shell::Argument::TYPE_PARAMETER) {
 			if (argument_name == "I") for (const std::string& entry : argument_values) include_paths.push_back(entry);
 		}
