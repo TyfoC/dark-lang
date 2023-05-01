@@ -45,8 +45,19 @@ int main(int argc, char** argv) {
 			std::vector<Dark::Token> tokens = Dark::Lexer::Lex(Dark::ReadEntireFile(input_file), Dark::Lexemes);
 			tokens = Dark::Preprocessor::Preprocess(tokens, messages, macros, "", include_paths, Dark::Lexemes);
 
-			std::cout << "Messages:" << std::endl;
-			for (const Dark::Message& message : messages) std::cout << message.FormString() << std::endl;
+			if (messages.size()) {
+				bool found_error = false;
+				std::cout << "Messages:" << std::endl;
+				for (const Dark::Message& message : messages) {
+					std::cout << message.FormString() << std::endl;
+					if (message.GetType() == Dark::Message::TYPE_ERROR && !found_error) found_error = true;
+				}
+
+				if (found_error) {
+					std::cout << "Errors found => action terminated!" << std::endl;
+					input_file.close();
+				}
+			}
 
 			std::cout << "Tokens:" << std::endl;
 			for (const Dark::Token& token : tokens) std::cout << "Name: " << token.GetValue() << ", Type: " << token.GetType() << std::endl;
