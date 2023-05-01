@@ -32,6 +32,8 @@ namespace Dark {
 		Token& SetValue(const std::string value = "");
 		size_t GetType() const;
 		std::string GetValue() const;
+
+		static size_t Find(const std::vector<Token> tokens, size_t type, size_t start_index);
 		protected:
 		size_t		m_type;
 		std::string	m_value;
@@ -53,6 +55,9 @@ namespace Dark {
 		std::string GetName() const;
 		std::vector<Token> GetExpression() const;
 		std::vector<Token> GetArguments() const;
+
+		Macro& AddExpression(const std::vector<Token> expression);
+		Macro& AddArguments(const std::vector<Token> arguments);
 		protected:
 		size_t				m_type;
 		std::string			m_name;

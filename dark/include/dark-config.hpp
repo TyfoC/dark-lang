@@ -93,6 +93,12 @@ namespace Dark {
 		{ TOKEN_TYPE_NEW_LINE, R"((\r\n|\n\r|\n|\r))" },
 		{ TOKEN_TYPE_COMMENT_BLOCK, R"(<!([\s\S]*?)!>)" },
 
+		{ TOKEN_TYPE_STRING_LITERAL, R"("(\\[\s\S]|[^\"])*")" },
+		{ TOKEN_TYPE_HEX_LITERAL, R"([+-]?0[xX][0-9a-fA-F]+\b)" },
+		{ TOKEN_TYPE_OCT_LITERAL, R"([+-]?0[oO]?[0-7]+\b)" },
+		{ TOKEN_TYPE_BIN_LITERAL, R"([+-]?0[bB][01]+\b)" },
+		{ TOKEN_TYPE_DEC_LITERAL, R"([+-]?[0-9]+\b)" },
+
 		{ TOKEN_TYPE_OPERATOR_SHIFT_RIGHT_ASSIGN, R"(>>=)" },
 		{ TOKEN_TYPE_OPERATOR_SHIFT_LEFT_ASSIGN, R"(<<=)" },
 		{ TOKEN_TYPE_OPERATOR_ADD_ASSIGN, R"(\+=)" },
@@ -114,9 +120,9 @@ namespace Dark {
 		{ TOKEN_TYPE_OPERATOR_SHIFT_RIGHT, R"(>>)" },
 		{ TOKEN_TYPE_OPERATOR_SHIFT_LEFT, R"(<<)" },
 		{ TOKEN_TYPE_OPERATOR_INC, R"(\+\+)" },
-		{ TOKEN_TYPE_OPERATOR_DEC, R"(--)" },
+		{ TOKEN_TYPE_OPERATOR_DEC, R"(\-\-)" },
 		{ TOKEN_TYPE_OPERATOR_ADD, R"(\+)" },
-		{ TOKEN_TYPE_OPERATOR_SUB, R"(-)" },
+		{ TOKEN_TYPE_OPERATOR_SUB, R"(\-)" },
 		{ TOKEN_TYPE_OPERATOR_MUL, R"(\*)" },
 		{ TOKEN_TYPE_OPERATOR_DIV, R"(/)" },
 		{ TOKEN_TYPE_OPERATOR_MOD, R"(%)" },
@@ -161,12 +167,6 @@ namespace Dark {
 		{ TOKEN_TYPE_OPERATOR_DO, R"(\bdo\b)" },
 		{ TOKEN_TYPE_OPERATOR_WHILE, R"(\bwhile\b)" },
 		{ TOKEN_TYPE_OPERATOR_UNTIL, R"(\buntil\b)" },
-
-		{ TOKEN_TYPE_STRING_LITERAL, R"("(\\[\s\S]|[^\"])*")" },
-		{ TOKEN_TYPE_HEX_LITERAL, R"(\b0[xX][0-9a-fA-F]+\b)" },
-		{ TOKEN_TYPE_OCT_LITERAL, R"(\b0[oO]?[0-7]+\b)" },
-		{ TOKEN_TYPE_BIN_LITERAL, R"(\b0[bB][01]+\b)" },
-		{ TOKEN_TYPE_DEC_LITERAL, R"(\b[0-9]+\b)" },
 
 		{ TOKEN_TYPE_IDENTIFIER, R"(\b[_a-zA-Z]\w*\b)" },
 	};

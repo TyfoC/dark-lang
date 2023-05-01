@@ -83,6 +83,7 @@ std::vector<Shell::Argument> Shell::Argument::Process(const std::string source, 
 				continue;
 			}
 
+			argument.SetType(argument.GetType() == TYPE_OPTION ? TYPE_PARAMETER : TYPE_SUBPARAMETER);
 			while (tokens[index].GetType() == TOKEN_TYPE_OPERATOR_ASSIGN && index < tokens_count) ++index;
 			if (index >= tokens_count) {
 				result.push_back(argument);

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <shell-argument.hpp>
 #include <dark-utils.hpp>
+#include <dark-preprocessor.hpp>
 
 int main(int argc, char** argv) {
 	std::string raw_arguments = "";
@@ -15,10 +16,14 @@ int main(int argc, char** argv) {
 	std::vector<std::string> input_paths = {};
 	std::vector<std::string> include_paths = {};
 	std::vector<Dark::Message> messages = {};
+	std::vector<Dark::Macro> macros = {};
 	for (const Shell::Argument& argument : arguments) {
 		argument_type = argument.GetType();
 		argument_name = argument.GetName();
 		argument_values = argument.GetValues();
+
+		std::cout << argument_type << ')' << argument_name << std::endl;
+		for (const std::string& value : argument_values) std::cout << value << std::endl;
 
 		if (argument_type == Shell::Argument::TYPE_PARAMETER) {
 			if (argument_name == "I") for (const std::string& entry : argument_values) include_paths.push_back(entry);
@@ -41,6 +46,10 @@ int main(int argc, char** argv) {
 			}
 
 			std::vector<Dark::Token> tokens = Dark::Lexer::Lex(Dark::ReadEntireFile(input_file), Dark::Lexemes);
+			tokens = Dark::Preprocessor::Preprocess(tokens, messages, macros, "", include_paths, Dark::Lexemes);
+
+			std::cout << "Messages:" << std::endl;
+			for (const Dark::Message& message : messages) std::cout << message.FormString() << std::endl;
 
 			std::cout << "Tokens:" << std::endl;
 			for (const Dark::Token& token : tokens) std::cout << "Name: " << token.GetValue() << ", Type: " << token.GetType() << std::endl;

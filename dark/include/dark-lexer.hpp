@@ -10,6 +10,8 @@ namespace Dark {
 		public:
 		static const std::string NewLineExpression;
 
+		static std::vector<Token> RemoveUseless(const std::vector<Token> tokens);
+		static size_t FindNested(const std::vector<Token> tokens, size_t type_start, size_t type_end, size_t start_index = 0);
 		static std::vector<Token> Lex(const std::string source, const std::vector<Token> lexemes = Lexemes);
 	};
 }
