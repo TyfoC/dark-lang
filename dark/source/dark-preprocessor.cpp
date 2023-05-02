@@ -1,10 +1,82 @@
 #include <dark-preprocessor.hpp>
 #include <iostream>
 
-size_t Dark::Preprocessor::Find(const std::vector<Macro> macros, const std::string name) {
-	size_t count = macros.size();
-	for (size_t i = 0; i < count; i++) if(macros[i].GetName() == name) return i;
-	return std::string::npos;
+std::vector<std::vector<Dark::Token> > Dark::Preprocessor::GetMacroArguments(const std::vector<Token> tokens, size_t macro_opening_parenthesis_index) {
+	std::vector<std::vector<Dark::Token> > macro_arguments = {};
+	std::vector<Token> tmp = {};
+	size_t tmp_index;
+
+	do {
+		tmp_index = Lexer::FindNested(tokens, TOKEN_TYPE_OPERATOR_COMMA, ++macro_opening_parenthesis_index);
+		if (tmp_index == std::string::npos) {
+			tmp_index = Lexer::FindNested(tokens, TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS, macro_opening_parenthesis_index);
+			if (tmp_index != std::string::npos) {
+				for (; macro_opening_parenthesis_index < tmp_index; macro_opening_parenthesis_index++) tmp.push_back(tokens[macro_opening_parenthesis_index]);
+				macro_arguments.push_back(tmp);
+			}
+
+			break;
+		}
+
+		for (; macro_opening_parenthesis_index < tmp_index; macro_opening_parenthesis_index++) tmp.push_back(tokens[macro_opening_parenthesis_index]);
+		macro_arguments.push_back(tmp);
+		tmp.clear();
+	} while(tmp_index != std::string::npos);
+
+	return macro_arguments;
+}
+
+std::vector<Dark::Token> Dark::Preprocessor::Expand(size_t index, const std::vector<std::vector<Token> > input_arguments, const std::vector<Macro> macros) {
+	if (index >= macros.size()) return {};
+	std::vector<Token> result = {}, tmp = {};
+	std::vector<std::vector<Token> > macro_arguments = {};
+
+	std::vector<Token> expression = macros[index].GetExpression();
+	std::vector<Token> arguments = macros[index].GetArguments();
+	size_t expression_length = expression.size();
+
+	std::string expr_name;
+	size_t tmp_index;
+	for (size_t i = 0; i < expression_length; i++) {
+		expr_name = expression[i].GetValue();
+		switch(expression[i].GetType()) {
+			case TOKEN_TYPE_IDENTIFIER:
+				tmp_index = Macro::Find(macros, expr_name);
+				if (tmp_index == std::string::npos) {
+					tmp_index = Token::Find(arguments, expr_name);
+					if (tmp_index == std::string::npos) {
+						result.push_back(expression[i]);
+						break;
+					}
+
+					result.insert(result.end(), input_arguments[tmp_index].begin(), input_arguments[tmp_index].end());
+					break;
+				}
+
+				if (macros[tmp_index].GetType() == Macro::TYPE_STANDARD) tmp = Expand(tmp_index, input_arguments, macros);
+				else {
+					if (++i >= expression_length || expression[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) return {};
+					macro_arguments = GetMacroArguments(expression, i);
+					if (macro_arguments.size()) {
+						for (const std::vector<Token>& arg_group : macro_arguments) i += arg_group.size();
+						i += macro_arguments.size();
+					}
+					else ++i;
+
+					if (i >= expression_length || expression[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) return {};
+
+					tmp = Expand(tmp_index, macro_arguments, macros);
+				}
+				
+				result.insert(result.end(), tmp.begin(), tmp.end());
+				break;
+			default:
+				result.push_back(expression[i]);
+				break;
+		}
+	}
+
+	return result;
 }
 
 std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
@@ -16,6 +88,8 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 	const std::vector<Token> lexemes
 ) {
 	std::vector<Token> result = {}, tmp = {}, cleaned = Lexer::RemoveUseless(tokens);
+	std::vector<std::vector<Token> > macro_arguments = {};
+
 	size_t count = cleaned.size();
 	size_t token_type;
 	std::string token_value = "";
@@ -63,7 +137,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 
 					token_type = cleaned[i].GetType();
 
-					tmp_index = Lexer::FindNested(cleaned, TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS, TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS, i);
+					tmp_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS, TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS, i);
 					if (tmp_index == std::string::npos) {
 						messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
 						return {};
@@ -76,7 +150,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 								break;
 							case TOKEN_TYPE_OPERATOR_COMMA:
 								if (cleaned[i - 1].GetType() == TOKEN_TYPE_OPERATOR_COMMA) {
-									messages.push_back(Message(Message::TYPE_ERROR, "missing argument in function macro definition"));
+									messages.push_back(Message(Message::TYPE_ERROR, "missing argument in extended macro definition"));
 									return {};
 								}
 								break;
@@ -89,7 +163,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 					++i;
 
 					if (cleaned[i].GetType() == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
-						token_index = Lexer::FindNested(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
+						token_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
@@ -109,7 +183,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 					macro.SetType(Macro::TYPE_STANDARD);
 
 					if (token_type == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
-						token_index = Lexer::FindNested(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
+						token_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
@@ -169,10 +243,36 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 			}
 		}
 		else if (token_type == TOKEN_TYPE_IDENTIFIER) {
-			tmp_index = Find(macros, token_value);
+			tmp_index = Macro::Find(macros, token_value);
 			if (tmp_index == std::string::npos) {
 				result.push_back(cleaned[i]);
 				continue;
+			}
+
+			if (macros[tmp_index].GetType() == Macro::TYPE_STANDARD) {
+				tmp = Expand(tmp_index, {}, macros);
+				result.insert(result.end(), tmp.begin(), tmp.end());
+			}
+			else {
+				if (++i >= count || cleaned[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
+					messages.push_back(Message(Message::TYPE_ERROR, "extended macro is used as standard"));
+					return {};
+				}
+
+				macro_arguments = GetMacroArguments(cleaned, i);
+				if (macro_arguments.size()) {
+					for (const std::vector<Token>& arg_group : macro_arguments) i += arg_group.size();
+					i += macro_arguments.size();
+				}
+				else ++i;
+
+				if (i >= count || cleaned[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
+					return {};
+				}
+
+				tmp = Expand(tmp_index, macro_arguments, macros);
+				result.insert(result.end(), tmp.begin(), tmp.end());
 			}
 		}
 		else result.push_back(cleaned[i]);

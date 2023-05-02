@@ -33,7 +33,8 @@ namespace Dark {
 		size_t GetType() const;
 		std::string GetValue() const;
 
-		static size_t Find(const std::vector<Token> tokens, size_t type, size_t start_index);
+		static size_t Find(const std::vector<Token> tokens, size_t type, size_t start_index = 0);
+		static size_t Find(const std::vector<Token> tokens, const std::string value, size_t start_index = 0);
 		protected:
 		size_t		m_type;
 		std::string	m_value;
@@ -58,6 +59,8 @@ namespace Dark {
 
 		Macro& AddExpression(const std::vector<Token> expression);
 		Macro& AddArguments(const std::vector<Token> arguments);
+
+		static size_t Find(const std::vector<Macro> macros, const std::string name);
 		protected:
 		size_t				m_type;
 		std::string			m_name;

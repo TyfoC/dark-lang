@@ -9,7 +9,8 @@
 namespace Dark {
 	class Preprocessor {
 		public:
-		static size_t Find(const std::vector<Macro> macros, const std::string name);
+		static std::vector<std::vector<Token> > GetMacroArguments(const std::vector<Token> tokens, size_t macro_opening_parenthesis_index);
+		static std::vector<Token> Expand(size_t index, const std::vector<std::vector<Token> > input_arguments, const std::vector<Macro> macros);
 
 		static std::vector<Token> Preprocess(
 			const std::vector<Token> tokens,

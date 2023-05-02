@@ -80,6 +80,20 @@
 		"__tree": "cpp",
 		"stack": "cpp",
 		"codecvt": "cpp",
-		"iomanip": "cpp"
+		"iomanip": "cpp",
+		"xfacet": "cpp",
+		"xiosbase": "cpp",
+		"xlocale": "cpp",
+		"xlocbuf": "cpp",
+		"xlocinfo": "cpp",
+		"xlocmes": "cpp",
+		"xlocmon": "cpp",
+		"xlocnum": "cpp",
+		"xloctime": "cpp",
+		"xmemory": "cpp",
+		"xstddef": "cpp",
+		"xstring": "cpp",
+		"xtr1common": "cpp",
+		"xutility": "cpp"
 	}
 }

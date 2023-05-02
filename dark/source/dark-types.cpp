@@ -70,6 +70,12 @@ size_t Dark::Token::Find(const std::vector<Token> tokens, size_t type, size_t st
 	return std::string::npos;
 }
 
+size_t Dark::Token::Find(const std::vector<Token> tokens, const std::string value, size_t start_index) {
+	const size_t count = tokens.size();
+	for (; start_index < count; start_index++) if (tokens[start_index].GetValue() == value) return start_index;
+	return std::string::npos;
+}
+
 Dark::Macro::Macro(size_t type, const std::string name, const std::vector<Token> expression, const std::vector<Token> arguments) {
 	m_type = type;
 	m_name = name;
@@ -121,4 +127,10 @@ Dark::Macro& Dark::Macro::AddExpression(const std::vector<Token> expression) {
 Dark::Macro& Dark::Macro::AddArguments(const std::vector<Token> arguments) {
 	m_arguments.insert(m_arguments.end(), arguments.begin(), arguments.end());
 	return *this;
+}
+
+size_t Dark::Macro::Find(const std::vector<Macro> macros, const std::string name) {
+	size_t count = macros.size();
+	for (size_t i = 0; i < count; i++) if(macros[i].GetName() == name) return i;
+	return std::string::npos;
 }

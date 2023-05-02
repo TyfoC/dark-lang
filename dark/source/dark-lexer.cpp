@@ -15,7 +15,7 @@ std::vector<Dark::Token> Dark::Lexer::RemoveUseless(const std::vector<Token> tok
 	return result;
 }
 
-size_t Dark::Lexer::FindNested(const std::vector<Token> tokens, size_t type_start, size_t type_end, size_t start_index) {
+size_t Dark::Lexer::FindNestingEnd(const std::vector<Token> tokens, size_t type_start, size_t type_end, size_t start_index) {
 	size_t count = tokens.size(), nested_level = 0, token_type;
 	for (; start_index < count; start_index++) {
 		token_type = tokens[start_index].GetType();
@@ -23,6 +23,24 @@ size_t Dark::Lexer::FindNested(const std::vector<Token> tokens, size_t type_star
 		else if (token_type == type_end) {
 			if (nested_level) --nested_level;
 			else return start_index;
+		}
+	}
+
+	return std::string::npos;
+}
+
+size_t Dark::Lexer::FindNested(const std::vector<Token> tokens, size_t type, size_t start_index, size_t nested_level) {
+	size_t count = tokens.size(), current_nested_level = 0, current_type;
+	for (; start_index < count; start_index++) {
+		current_type = tokens[start_index].GetType();
+
+		if (current_type == type && nested_level == current_nested_level) return start_index;
+		else if (current_type == TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS || current_type == TOKEN_TYPE_OPERATOR_OPENING_BRACKET ||
+			current_type == TOKEN_TYPE_OPERATOR_OPENING_BRACE) ++current_nested_level;
+		else if (current_type == TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS || current_type == TOKEN_TYPE_OPERATOR_CLOSING_BRACKET ||
+			current_type == TOKEN_TYPE_OPERATOR_CLOSING_BRACE) {
+			if (current_nested_level) --current_nested_level;
+			else break;
 		}
 	}
 

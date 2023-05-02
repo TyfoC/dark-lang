@@ -1,7 +1,7 @@
 @sysinc "limits.dark"
 
 @set VAR_NAME	1 + 3 * 99;
-@set FUN_NAME(a, b, c)	{
+@set FUN_NAME(a, b, c) {
 	(a + VAR_NAME) - c * b
 }
 
@@ -10,5 +10,5 @@
 	sval_t - builtin type
 !>
 sval_t main() {
-	return SVAL64_MIN + typesz(uval_t) - -1234 - +1;	<! return value from function !>
+	return (FUN_NAME(123 - (456 + 789), 993 * 37, -23 + 77 * -99) + -111);	<! return value from function !>
 }
