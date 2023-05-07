@@ -87,10 +87,10 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 	std::vector<std::string> include_paths,
 	const std::vector<Token> lexemes
 ) {
-	std::vector<Token> result = {}, tmp = {}, cleaned = Lexer::RemoveUseless(tokens);
+	std::vector<Token> preprocessed = Lexer::RemoveUseless(tokens), tmp = {}, cleaned = {};
 	std::vector<std::vector<Token> > macro_arguments = {};
 
-	size_t count = cleaned.size();
+	size_t count = preprocessed.size();
 	size_t token_type;
 	std::string token_value = "";
 
@@ -100,31 +100,33 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 
 	size_t tmp_index;
 	Macro macro = {};
+
+	//	macro def & undef
 	for (size_t i = 0; i < count; i++) {
-		token_type = cleaned[i].GetType();
-		token_value = cleaned[i].GetValue();
+		token_type = preprocessed[i].GetType();
+		token_value = preprocessed[i].GetValue();
 
 		if (token_type == TOKEN_TYPE_OPERATOR_PREPROCESSOR_DIRECTIVE) {
 			if (++i >= count) break;
 
-			token_type = cleaned[i].GetType();
-			token_value = cleaned[i].GetValue();
+			token_type = preprocessed[i].GetType();
+			token_value = preprocessed[i].GetValue();
 
 			if (token_value == "set") {
-				if (++i >= count || cleaned[i].GetType() != TOKEN_TYPE_IDENTIFIER) {
+				if (++i >= count || preprocessed[i].GetType() != TOKEN_TYPE_IDENTIFIER) {
 					messages.push_back(Message(Message::TYPE_ERROR, "missing macro name"));
 					return {};
 				}
 
-				macro.SetName(cleaned[i].GetValue());
+				macro.SetName(preprocessed[i].GetValue());
 				
 				if (++i >= count) {
 					messages.push_back(Message(Message::TYPE_ERROR, "end of macro definition not found"));
 					return {};
 				}
 
-				token_type = cleaned[i].GetType();
-				token_value = cleaned[i].GetValue();
+				token_type = preprocessed[i].GetType();
+				token_value = preprocessed[i].GetValue();
 
 				size_t token_index;
 				if (token_type == TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
@@ -135,21 +137,21 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 						return {};
 					}
 
-					token_type = cleaned[i].GetType();
+					token_type = preprocessed[i].GetType();
 
-					tmp_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS, TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS, i);
+					tmp_index = Lexer::FindNestingEnd(preprocessed, TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS, TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS, i);
 					if (tmp_index == std::string::npos) {
 						messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
 						return {};
 					}
 
 					for (; i < tmp_index; i++) {
-						switch(cleaned[i].GetType()) {
+						switch(preprocessed[i].GetType()) {
 							case TOKEN_TYPE_IDENTIFIER:
-								macro.AddArguments({ cleaned[i] });
+								macro.AddArguments({ preprocessed[i] });
 								break;
 							case TOKEN_TYPE_OPERATOR_COMMA:
-								if (cleaned[i - 1].GetType() == TOKEN_TYPE_OPERATOR_COMMA) {
+								if (preprocessed[i - 1].GetType() == TOKEN_TYPE_OPERATOR_COMMA) {
 									messages.push_back(Message(Message::TYPE_ERROR, "missing argument in extended macro definition"));
 									return {};
 								}
@@ -162,54 +164,116 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 
 					++i;
 
-					if (cleaned[i].GetType() == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
-						token_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
+					if (preprocessed[i].GetType() == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
+						token_index = Lexer::FindNestingEnd(preprocessed, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
 						}
 					}
 					else {
-						token_index = Token::Find(cleaned, TOKEN_TYPE_OPERATOR_SEMICOLON, i);
+						token_index = Token::Find(preprocessed, TOKEN_TYPE_OPERATOR_SEMICOLON, i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
 						}
 					}
 
-					for (; i < token_index; i++) macro.AddExpression({ cleaned[i] });
+					for (; i < token_index; i++) macro.AddExpression({ preprocessed[i] });
 				}
 				else {
 					macro.SetType(Macro::TYPE_STANDARD);
 
 					if (token_type == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
-						token_index = Lexer::FindNestingEnd(cleaned, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
+						token_index = Lexer::FindNestingEnd(preprocessed, TOKEN_TYPE_OPERATOR_OPENING_BRACE, TOKEN_TYPE_OPERATOR_CLOSING_BRACE, ++i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
 						}
 					}
 					else {
-						token_index = Token::Find(cleaned, TOKEN_TYPE_OPERATOR_SEMICOLON, i);
+						token_index = Token::Find(preprocessed, TOKEN_TYPE_OPERATOR_SEMICOLON, i);
 						if (token_index == std::string::npos) {
 							messages.push_back(Message(Message::TYPE_ERROR, "macro expression not completed"));
 							return {};
 						}
 					}
 
-					for (; i < token_index; i++) macro.AddExpression({ cleaned[i] });
+					for (; i < token_index; i++) macro.AddExpression({ preprocessed[i] });
 				}
 				macros.push_back(macro);
 				macro = {};
 			}
-			else if (token_value == "sysinc") {
-				if (++i >= count) break;
+			else if (token_value == "unset") {
+				if (++i >= count) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing macro name"));
+					return {};
+				}
 
-				token_type = cleaned[i].GetType();
-				token_value = cleaned[i].GetValue();
+				if (preprocessed[i].GetType() != TOKEN_TYPE_IDENTIFIER) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing macro name"));
+					return {};
+				}
 
-				if (token_type != TOKEN_TYPE_STRING_LITERAL) {
-					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path)"));
+				tmp_index = Macro::Find(macros, preprocessed[i].GetValue());
+				if (tmp_index == std::string::npos) {
+					messages.push_back(Message(Message::TYPE_WARNING, "this macro is not defined"));
+					continue;
+				}
+
+				macros.erase(macros.begin() + tmp_index);
+			}
+			else if (token_value == "specinc") {
+				if (++i >= count) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_type = preprocessed[i].GetType();
+				token_value = preprocessed[i].GetValue();
+
+				if (token_type == TOKEN_TYPE_IDENTIFIER) {
+					tmp_index = Macro::Find(macros, token_value);
+					if (tmp_index == std::string::npos) {
+						messages.push_back(Message(Message::TYPE_ERROR, "passed the name of an undefined macro"));
+						return {};
+					}
+
+					if (macros[tmp_index].GetType() == Macro::TYPE_STANDARD) tmp = Expand(tmp_index, {}, macros);
+					else {
+						if (++i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
+							messages.push_back(Message(Message::TYPE_ERROR, "extended macro is used as standard"));
+							return {};
+						}
+
+						macro_arguments = GetMacroArguments(preprocessed, i);
+						if (macro_arguments.size()) {
+							for (const std::vector<Token>& arg_group : macro_arguments) i += arg_group.size();
+							i += macro_arguments.size();
+						}
+						else ++i;
+
+						if (i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) {
+							messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
+							return {};
+						}
+
+						tmp = Expand(tmp_index, macro_arguments, macros);
+					}
+
+					if (tmp.size() != 1 || tmp[0].GetType() != TOKEN_TYPE_STRING_LITERAL) {
+						messages.push_back(Message(
+								Message::TYPE_ERROR,
+								"the macro expression that defines the include path must consist of only a string literal"
+							)
+						);
+						return {};
+					}
+
+					token_value = tmp[0].GetValue();
+				}
+				else if (token_type != TOKEN_TYPE_STRING_LITERAL) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
 					return {};
 				}
 
@@ -235,7 +299,81 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 					messages, macros, file_directory_path, include_paths, lexemes
 				);
 
-				result.insert(result.end(), tmp.begin(), tmp.end());
+				input_file.close();
+				cleaned.insert(cleaned.end(), tmp.begin(), tmp.end());
+			}
+			else if (token_value == "locinc") {
+				if (++i >= count) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_value = preprocessed[i].GetValue();
+
+				token_type = preprocessed[i].GetType();
+				token_value = preprocessed[i].GetValue();
+
+				if (token_type == TOKEN_TYPE_IDENTIFIER) {
+					tmp_index = Macro::Find(macros, token_value);
+					if (tmp_index == std::string::npos) {
+						messages.push_back(Message(Message::TYPE_ERROR, "passed the name of an undefined macro"));
+						return {};
+					}
+
+					if (macros[tmp_index].GetType() == Macro::TYPE_STANDARD) tmp = Expand(tmp_index, {}, macros);
+					else {
+						if (++i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
+							messages.push_back(Message(Message::TYPE_ERROR, "extended macro is used as standard"));
+							return {};
+						}
+
+						macro_arguments = GetMacroArguments(preprocessed, i);
+						if (macro_arguments.size()) {
+							for (const std::vector<Token>& arg_group : macro_arguments) i += arg_group.size();
+							i += macro_arguments.size();
+						}
+						else ++i;
+
+						if (i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) {
+							messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
+							return {};
+						}
+
+						tmp = Expand(tmp_index, macro_arguments, macros);
+					}
+
+					if (tmp.size() != 1 || tmp[0].GetType() != TOKEN_TYPE_STRING_LITERAL) {
+						messages.push_back(Message(
+								Message::TYPE_ERROR,
+								"the macro expression that defines the include path must consist of only a string literal"
+							)
+						);
+						return {};
+					}
+
+					token_value = tmp[0].GetValue();
+				}
+				else if (token_type != TOKEN_TYPE_STRING_LITERAL) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_value = token_value.substr(1, token_value.length() - 2);
+				include_path = file_directory_path + "/" + token_value;
+
+				input_file = std::ifstream(include_path);
+				if (!input_file.is_open()) {
+					messages.push_back(Message(Message::TYPE_ERROR, "cannot open file: " + include_path));
+					return {};
+				}
+
+				tmp = Preprocess(
+					Lexer::RemoveUseless(Lexer::Lex(ReadEntireFile(input_file), lexemes)),
+					messages, macros, file_directory_path, include_paths, lexemes
+				);
+
+				input_file.close();
+				cleaned.insert(cleaned.end(), tmp.begin(), tmp.end());
 			}
 			else {
 				messages.push_back(Message(Message::TYPE_ERROR, "unknown directive name"));
@@ -245,38 +383,38 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 		else if (token_type == TOKEN_TYPE_IDENTIFIER) {
 			tmp_index = Macro::Find(macros, token_value);
 			if (tmp_index == std::string::npos) {
-				result.push_back(cleaned[i]);
+				cleaned.push_back(preprocessed[i]);
 				continue;
 			}
 
 			if (macros[tmp_index].GetType() == Macro::TYPE_STANDARD) {
 				tmp = Expand(tmp_index, {}, macros);
-				result.insert(result.end(), tmp.begin(), tmp.end());
+				cleaned.insert(cleaned.end(), tmp.begin(), tmp.end());
 			}
 			else {
-				if (++i >= count || cleaned[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
+				if (++i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS) {
 					messages.push_back(Message(Message::TYPE_ERROR, "extended macro is used as standard"));
 					return {};
 				}
 
-				macro_arguments = GetMacroArguments(cleaned, i);
+				macro_arguments = GetMacroArguments(preprocessed, i);
 				if (macro_arguments.size()) {
 					for (const std::vector<Token>& arg_group : macro_arguments) i += arg_group.size();
 					i += macro_arguments.size();
 				}
 				else ++i;
 
-				if (i >= count || cleaned[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) {
+				if (i >= count || preprocessed[i].GetType() != TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS) {
 					messages.push_back(Message(Message::TYPE_ERROR, "missing closing parenthesis"));
 					return {};
 				}
 
 				tmp = Expand(tmp_index, macro_arguments, macros);
-				result.insert(result.end(), tmp.begin(), tmp.end());
+				cleaned.insert(cleaned.end(), tmp.begin(), tmp.end());
 			}
 		}
-		else result.push_back(cleaned[i]);
+		else cleaned.push_back(preprocessed[i]);
 	}
 
-	return result;
+	return cleaned;
 }

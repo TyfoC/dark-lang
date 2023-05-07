@@ -14,3 +14,14 @@ std::string Dark::ReadEntireFile(std::ifstream& input_file) {
 	result.assign((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 	return result;
 }
+
+std::string Dark::GetFileDirectory(const std::string input_path) {
+	std::string result = input_path;
+	size_t position = result.rfind('/');
+	if (position == std::string::npos) {
+		position = result.rfind('\\');
+		if (position == std::string::npos) return "";
+	}
+
+	return result.substr(0, position);
+}

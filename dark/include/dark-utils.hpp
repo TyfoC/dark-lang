@@ -21,6 +21,7 @@ namespace Dark {
 
 	size_t GetFileSize(std::ifstream& input_file);
 	std::string ReadEntireFile(std::ifstream& input_file);
+	std::string GetFileDirectory(const std::string input_path);
 }
 
 #endif

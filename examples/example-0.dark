@@ -1,4 +1,4 @@
-@sysinc "limits.dark"
+@specinc "limits.dark"
 
 @set VAR_NAME	1 + 3 * 99;
 @set FUN_NAME(a, b, c) {

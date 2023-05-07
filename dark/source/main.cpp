@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 			}
 
 			std::vector<Dark::Token> tokens = Dark::Lexer::Lex(Dark::ReadEntireFile(input_file), Dark::Lexemes);
-			tokens = Dark::Preprocessor::Preprocess(tokens, messages, macros, "", include_paths, Dark::Lexemes);
+			tokens = Dark::Preprocessor::Preprocess(tokens, messages, macros, Dark::GetFileDirectory(input_path), include_paths, Dark::Lexemes);
 
 			if (messages.size()) {
 				bool found_error = false;

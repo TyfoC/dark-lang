@@ -1,24 +1,30 @@
-Operators:
-@x
-<{ - open preprocessor block
-}> - close preprocessor block
-... - list of arguments
-defined(x)
-inserted(x)
+<! Current functions: !>
+<! Include files: !>
+@specinc "specified_path_file_name"
+@locinc "local_file_name"
 
-@def NAME <{EXPRESSION}>
-@def NAME(ARG1, ARGUMENT2, ...) <{
-	EXPRESSION
-	`...` = EXARGUMENTS
-	EXCOUNT - count of `...` EXARGUMENTS
-}>
-@undef NAME
+<! Define & undefined macros: !>
+@set STANDARD_MACRO							expression;
+@set EXTENDED_MACRO(a, b)					expression with a + b;
+@set STANDARD_MACRO_WITH_BLOCK_DEFINITION	{
+	<! Definition line #0 !>
+	<! Definition line #1 !>
+	<! ... !>
+	<! Definition line #N !>
+}
+@set EXTENDED_MACRO_WITH_BLOCK_DEFINITION(a) {
+	<! Definition line #0 !>
+	a * 2;
+	<! Definition line #1 !>
+	<! ... !>
+	a - 4;
+	<! Definition line #N !>
+}
+@unset MACRO_NAME							<! remove macro !>
 
-@if EXPRESSION
-	EXPRESSION
-@elif EXPRESSION
-	EXPRESSION
-@endif
+<! You can use macro in include paths: !>
+@set NAME	expression;
+@specinc NAME
+@locinc NAME
 
-@locins "local file path"
-@sysins "system file path"
+<! Multiline commentary !>
