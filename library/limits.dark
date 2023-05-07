@@ -13,26 +13,3 @@
 @set UVAL16_MAX	65535;
 @set UVAL32_MAX	4294967295;
 @set UVAL64_MAX	18446744073709551615;
-
-<!
-@if typesz(sval_t) == 2 {
-	@set SVAL_MIN	SVAL16_MIN;
-	@set SVAL_MAX	SVAL16_MAX;
-	@set UVAL_MAX	UVAL16_MAX;
-}
-@elif typesz(sval_t) == 4 {
-	@set SVAL_MIN	SVAL32_MIN;
-	@set SVAL_MAX	SVAL32_MAX;
-	@set UVAL_MAX	UVAL32_MAX;
-}
-@elif typesz(sval_t) == 8 {
-	@set SVAL_MIN	SVAL64_MIN;
-	@set SVAL_MAX	SVAL64_MAX;
-	@set UVAL_MAX	UVAL64_MAX;
-}
-@else {
-	@set SVAL_MIN	SVAL8_MIN;
-	@set SVAL_MAX	SVAL8_MAX;
-	@set UVAL_MAX	UVAL8_MAX;
-}
-!>

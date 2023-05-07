@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include "dark-config.hpp"
 
 namespace Dark {
 	template<typename T> std::vector<T> Find(const std::vector<T> values, const T value, size_t start_index = 0) {
@@ -22,6 +23,8 @@ namespace Dark {
 	size_t GetFileSize(std::ifstream& input_file);
 	std::string ReadEntireFile(std::ifstream& input_file);
 	std::string GetFileDirectory(const std::string input_path);
+
+	std::string Format(const std::vector<Token> tokens);
 }
 
 #endif

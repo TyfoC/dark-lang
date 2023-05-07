@@ -35,6 +35,7 @@ namespace Dark {
 
 		static size_t Find(const std::vector<Token> tokens, size_t type, size_t start_index = 0);
 		static size_t Find(const std::vector<Token> tokens, const std::string value, size_t start_index = 0);
+		static std::string Format(const std::vector<Token> tokens);
 		protected:
 		size_t		m_type;
 		std::string	m_value;

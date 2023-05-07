@@ -1,8 +1,8 @@
 CPP=g++
 OUT=dark.out
 
-CPP_FLAGS=-Wall -Wextra -I ../include -std=c++17
-LD_FLAGS=-Wall -Wextra
+CPP_FLAGS=-Wall -Wextra -I ../include -std=c++17 -O2
+LD_FLAGS=-Wall -Wextra -O2
 SOURCE_FILES=$(shell find ../source -name *.cpp)
 OBJECT_FILES=$(addsuffix .o, $(SOURCE_FILES))
 

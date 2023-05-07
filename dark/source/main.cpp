@@ -27,8 +27,11 @@ int main(int argc, char** argv) {
 		}
 		else if (argument_type == Shell::Argument::TYPE_OPTION) {
 			if (argument_name == "p") {
-				if (operation != ' ') std::cout << "Warning: operation already selected: `-" << operation << "`!" << std::endl;
-				else operation = argument_name[0];
+				if (operation != ' ') {
+					std::cout << "Warning: already selected operation changed: from `-"
+					<< operation << "` to `" << argument_name[0] << "`!" << std::endl;
+				}
+				operation = argument_name[0];
 			}
 		}
 		else input_paths.push_back(argument_name);
@@ -56,12 +59,26 @@ int main(int argc, char** argv) {
 				if (found_error) {
 					std::cout << "Errors found => action terminated!" << std::endl;
 					input_file.close();
+					return 3;
 				}
 			}
 
+			/*
 			std::cout << "Tokens:" << std::endl;
 			for (const Dark::Token& token : tokens) std::cout << "Name: " << token.GetValue() << ", Type: " << token.GetType() << std::endl;
+			*/
+
 			input_file.close();
+
+			std::string output_path = input_path + ".pre.dark";
+			std::ofstream output_file(output_path);
+			if (!output_file.is_open()) {
+				std::cout << "Error: failed to create `" << output_path << "`!" << std::endl;
+				return 2;
+			}
+
+			output_file << Dark::Format(tokens);
+			output_file.close();
 		}
 	}
 	else {

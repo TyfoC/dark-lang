@@ -2,13 +2,14 @@
 #ifndef DARK_PREPROCESSOR_HPP
 #define DARK_PREPROCESSOR_HPP
 
-#include "dark-utils.hpp"
-#include "dark-config.hpp"
 #include "dark-lexer.hpp"
+#include "dark-algorithms.hpp"
 
 namespace Dark {
 	class Preprocessor {
 		public:
+		static const std::vector<AlgorithmOperator> Operators;
+
 		static std::vector<std::vector<Token> > GetMacroArguments(const std::vector<Token> tokens, size_t macro_opening_parenthesis_index);
 		static std::vector<Token> Expand(size_t index, const std::vector<std::vector<Token> > input_arguments, const std::vector<Macro> macros);
 

@@ -1,9 +1,14 @@
+<!
+	Preprocessor usage:
+		dark.out :p input_file_paths :I=../include/path/1/,../include/path/N/
+!>
+
 <! Current functions: !>
 <! Include files: !>
 @specinc "specified_path_file_name"
 @locinc "local_file_name"
 
-<! Define & undefined macros: !>
+<! Define & undefine macros: !>
 @set STANDARD_MACRO							expression;
 @set EXTENDED_MACRO(a, b)					expression with a + b;
 @set STANDARD_MACRO_WITH_BLOCK_DEFINITION	{
@@ -22,9 +27,21 @@
 }
 @unset MACRO_NAME							<! remove macro !>
 
-<! You can use macro in include paths: !>
+<! You can also use conditions: !>
+@if CONDITION IF_TRUE;
+@else <! optionally !> {
+	IF_FALSE;
+}
+
+<! If you want to check if a macro exists: !>
+@exist NAME <! return 1 if NAME exist, otherwise 0 !>
+<! You can use it, for example, in conditions: !>
+@if (@exist NAME - 1) ACTION;	//	if exist: 1 - 1 = 0, else: 1 - 0 = 1
+
+<! You can use macro in preprocessor expression: !>
 @set NAME	expression;
 @specinc NAME
 @locinc NAME
+@if NAME + 1 >= 333 {IF_TRUE} @else IF_ELSE;
 
 <! Multiline commentary !>

@@ -5,6 +5,9 @@
 	(a + VAR_NAME) - c * b
 }
 
+@if (!@exist VAR_NAME) { VAR_NAME; }
+@else <! IF FALSE !> { 0xDEADDEAD; }
+
 <!
 	sval_t main() - entry point
 	sval_t - builtin type

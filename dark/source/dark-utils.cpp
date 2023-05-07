@@ -25,3 +25,44 @@ std::string Dark::GetFileDirectory(const std::string input_path) {
 
 	return result.substr(0, position);
 }
+
+std::string Dark::Format(const std::vector<Token> tokens) {
+	std::string result = "", token_value = "";
+	size_t token_type, tab_level = 0, count = tokens.size();
+	for (size_t i = 0; i < count; i++) {
+		token_type = tokens[i].GetType();
+		token_value = tokens[i].GetValue();
+
+		if (token_type == TOKEN_TYPE_OPERATOR_OPENING_BRACE) {
+			result += token_value + '\n';
+			++tab_level;
+			for (size_t i = 0; i < tab_level; i++) result += '\t';
+		}
+		else if (token_type == TOKEN_TYPE_OPERATOR_CLOSING_BRACE) {
+			result += token_value + '\n';
+			if (tab_level) --tab_level;
+			for (size_t i = 0; i < tab_level; i++) result += '\t';
+		}
+		else if (token_type == TOKEN_TYPE_OPERATOR_OPENING_PARENTHESIS ||
+			token_type == TOKEN_TYPE_OPERATOR_OPENING_BRACKET) {
+				if (i && tokens[i - 1].GetType() == TOKEN_TYPE_IDENTIFIER) result.erase(result.end() - 1);
+				result += token_value;
+			}
+		else if (token_type == TOKEN_TYPE_OPERATOR_CLOSING_PARENTHESIS ||
+			token_type == TOKEN_TYPE_OPERATOR_CLOSING_BRACKET) {
+			if (i && result.back() == ' ') result.erase(result.end() - 1);
+			result += token_value + ' ';
+		}
+		else if (token_type == TOKEN_TYPE_OPERATOR_SEMICOLON) {
+			if (i && result.back() == ' ') result.erase(result.end() - 1);
+			result += token_value + '\n';
+			for (size_t i = 0; i < tab_level; i++) result += '\t';
+		}
+		else if (token_type == TOKEN_TYPE_OPERATOR_COMMA) result += ", ";
+		else result += token_value + ' ';
+
+		if (i < count - 1 && tokens[i + 1].GetType() == TOKEN_TYPE_OPERATOR_CLOSING_BRACE) result.erase(result.end() - 1);
+	}
+
+	return result;
+}
