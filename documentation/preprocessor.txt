@@ -36,7 +36,7 @@
 <! If you want to check if a macro exists: !>
 @exist NAME <! return 1 if NAME exist, otherwise 0 !>
 <! You can use it, for example, in conditions: !>
-@if (@exist NAME - 1) ACTION;	//	if exist: 1 - 1 = 0, else: 1 - 0 = 1
+@if (@exist NAME - 1) ACTION;	//	if exist: 1 - 1 = 0, else: 0 - 1 = -1
 
 <! You can use macro in preprocessor expression: !>
 @set NAME	expression;
