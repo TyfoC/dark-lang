@@ -2,7 +2,7 @@
 #ifndef DARK_PREPROCESSOR_HPP
 #define DARK_PREPROCESSOR_HPP
 
-#define DARK_PREPROCESSOR_VERSION	110	//	1.1.0
+#define DARK_PREPROCESSOR_VERSION	120	//	1.2.0
 
 #include "dark-lexer.hpp"
 #include "dark-algorithms.hpp"
