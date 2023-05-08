@@ -1,5 +1,9 @@
 @specinc "limits.dark"
 
+@set REP(a, b) {
+	@repeat a b;
+}
+
 @set VAR_NAME	1 + 3 * 99;
 @set FUN_NAME(a, b, c) {
 	(a + VAR_NAME) - c * b
@@ -14,4 +18,5 @@
 !>
 sval_t main() {
 	return (FUN_NAME(123 - (456 + 789), 993 * 37, -23 + 77 * -99) + -111);	<! return value from function !>
+	REP(5, "REPEAT");
 }
