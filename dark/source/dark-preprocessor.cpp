@@ -399,7 +399,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 				found = false;
 				for (const std::string& directory_path : include_paths) {
 					include_path = directory_path + "/" + token_value;
-					input_file = std::ifstream(include_path);
+					input_file = std::ifstream(include_path, std::ios::binary);
 					if (input_file.is_open()) {
 						found = true;
 						break;
@@ -431,7 +431,7 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 				token_value = token_value.substr(1, token_value.length() - 2);
 				include_path = file_directory_path + "/" + token_value;
 
-				input_file = std::ifstream(include_path);
+				input_file = std::ifstream(include_path, std::ios::binary);
 				if (!input_file.is_open()) {
 					messages.push_back(Message(Message::TYPE_ERROR, "cannot open file: " + include_path));
 					return {};
