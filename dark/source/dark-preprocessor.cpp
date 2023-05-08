@@ -380,6 +380,66 @@ std::vector<Dark::Token> Dark::Preprocessor::Preprocess(
 				input_file.close();
 				preprocessed.insert(preprocessed.end(), tmp.begin(), tmp.end());
 			}
+			else if (token_value == "specraw") {
+				if (++i >= count) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_type = cleaned[i].GetType();
+				token_value = cleaned[i].GetValue();
+				
+				if (token_type != TOKEN_TYPE_STRING_LITERAL) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_value = token_value.substr(1, token_value.length() - 2);
+
+				found = false;
+				for (const std::string& directory_path : include_paths) {
+					include_path = directory_path + "/" + token_value;
+					input_file = std::ifstream(include_path);
+					if (input_file.is_open()) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					messages.push_back(Message(Message::TYPE_ERROR, "cannot open file: " + token_value));
+					return {};
+				}
+
+				preprocessed.push_back(Token(TOKEN_TYPE_RAW_DATA, ReadEntireFile(input_file)));
+				input_file.close();
+			}
+			else if (token_value == "locraw") {
+				if (++i >= count) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_type = cleaned[i].GetType();
+				token_value = cleaned[i].GetValue();
+				
+				if (token_type != TOKEN_TYPE_STRING_LITERAL) {
+					messages.push_back(Message(Message::TYPE_ERROR, "missing string literal (file path) / macro name"));
+					return {};
+				}
+
+				token_value = token_value.substr(1, token_value.length() - 2);
+				include_path = file_directory_path + "/" + token_value;
+
+				input_file = std::ifstream(include_path);
+				if (!input_file.is_open()) {
+					messages.push_back(Message(Message::TYPE_ERROR, "cannot open file: " + include_path));
+					return {};
+				}
+
+				preprocessed.push_back(Token(TOKEN_TYPE_RAW_DATA, ReadEntireFile(input_file)));
+				input_file.close();
+			}
 			else if (token_value == "if") {
 				if (++i >= count) {
 					messages.push_back(Message(Message::TYPE_ERROR, "condition not specified"));

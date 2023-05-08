@@ -4,6 +4,7 @@
 
 #include <regex>
 #include "dark-config.hpp"
+#include "dark-utils.hpp"
 
 namespace Dark {
 	class Lexer {

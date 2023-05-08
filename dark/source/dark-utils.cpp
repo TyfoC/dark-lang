@@ -59,6 +59,7 @@ std::string Dark::Format(const std::vector<Token> tokens) {
 			for (size_t i = 0; i < tab_level; i++) result += '\t';
 		}
 		else if (token_type == TOKEN_TYPE_OPERATOR_COMMA) result += ", ";
+		else if (token_type == TOKEN_TYPE_RAW_DATA) result += token_value;
 		else result += token_value + ' ';
 
 		if (i < count - 1 && tokens[i + 1].GetType() == TOKEN_TYPE_OPERATOR_CLOSING_BRACE) result.erase(result.end() - 1);

@@ -4,12 +4,12 @@ const std::string Dark::Lexer::NewLineExpression = R"((\r\n|\n\r|\n|\r))";
 
 std::vector<Dark::Token> Dark::Lexer::RemoveUseless(const std::vector<Token> tokens) {
 	size_t token_type;
-	std::vector<Token> result = {};
-	for (const Token& token : tokens) {
-		token_type = token.GetType();
-		if (token_type != TOKEN_TYPE_SPACE && token_type != TOKEN_TYPE_NEW_LINE && token_type != TOKEN_TYPE_COMMENT_BLOCK) {
-			result.push_back(token);
-		}
+	std::vector<Token> result = {}, tmp = {};
+	size_t count = tokens.size();
+
+	for (size_t i = 0; i < count; i++) {
+		token_type = tokens[i].GetType();
+		if (token_type != TOKEN_TYPE_SPACE && token_type != TOKEN_TYPE_NEW_LINE && token_type != TOKEN_TYPE_COMMENT_BLOCK) result.push_back(tokens[i]);
 	}
 
 	return result;

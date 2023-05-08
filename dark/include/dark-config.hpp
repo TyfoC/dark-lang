@@ -86,6 +86,8 @@ namespace Dark {
 		TOKEN_TYPE_DEC_LITERAL,							//	1000000025
 
 		TOKEN_TYPE_IDENTIFIER,							//	_aWh0l31d3nt1f13r
+
+		TOKEN_TYPE_RAW_DATA,
 	};
 
 	const std::vector<Token> Lexemes = {

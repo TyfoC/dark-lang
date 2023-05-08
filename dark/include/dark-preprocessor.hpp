@@ -6,6 +6,7 @@
 
 #include "dark-lexer.hpp"
 #include "dark-algorithms.hpp"
+#include "dark-utils.hpp"
 
 namespace Dark {
 	class Preprocessor {

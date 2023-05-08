@@ -47,7 +47,7 @@
 <! Multiline commentary !>
 
 <! ============== !>
-<! Version 1.1.0 !>
+<! Version 1.1.0  !>
 <! ============== !>
 
 <! You can repeat something: !>
@@ -55,3 +55,11 @@
 @repeat COUNT	{
 	multiline_expression;
 }
+
+<! ============== !>
+<! Version 1.2.0  !>
+<! ============== !>
+
+<! You can insert some data, that won't be changed: !>
+@specraw "specified_path_file_name"
+@locraw "local_file_name"

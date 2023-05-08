@@ -12,6 +12,8 @@
 @if (!@exist VAR_NAME) { VAR_NAME; }
 @else <! IF FALSE !> { 0xDEADDEAD; }
 
+@locraw "raw.txt"
+
 <!
 	sval_t main() - entry point
 	sval_t - builtin type
