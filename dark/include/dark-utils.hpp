@@ -25,6 +25,10 @@ namespace Dark {
 	std::string GetFileDirectory(const std::string input_path);
 
 	std::string Format(const std::vector<Token> tokens);
+
+	bool IsNumber(const Token token);
+	size_t GetUlong(const Token token);
+	ptrdiff_t GetLong(const Token token);
 }
 
 #endif

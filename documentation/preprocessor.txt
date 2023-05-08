@@ -1,6 +1,6 @@
 <!
 	Preprocessor usage:
-		dark.out :p input_file_paths :I=../include/path/1/,../include/path/N/
+		dark :p input_file_paths :I=../include/path/1/,../include/path/N/
 !>
 
 <! Current functions: !>
@@ -45,3 +45,13 @@
 @if NAME + 1 >= 333 {IF_TRUE} @else IF_ELSE;
 
 <! Multiline commentary !>
+
+<! ============== !>
+<! Version 1.1.0 !>
+<! ============== !>
+
+<! You can repeat something: !>
+@repeat COUNT	expression;			<! => expression expression ... !>
+@repeat COUNT	{
+	multiline_expression;
+}

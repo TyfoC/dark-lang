@@ -66,3 +66,37 @@ std::string Dark::Format(const std::vector<Token> tokens) {
 
 	return result;
 }
+
+bool Dark::IsNumber(const Token token) {
+	size_t type = token.GetType();
+	if (type == TOKEN_TYPE_HEX_LITERAL || type == TOKEN_TYPE_OCT_LITERAL ||
+		type == TOKEN_TYPE_BIN_LITERAL || type == TOKEN_TYPE_DEC_LITERAL) return true;
+	return false;
+}
+
+size_t Dark::GetUlong(const Token token) {
+	size_t type = token.GetType();
+	std::string value = token.GetValue();
+	if (value[0] == '+') value = value.substr(1);
+	else if (value[0] == '-') return (size_t)GetLong(token);
+
+	if (type == TOKEN_TYPE_HEX_LITERAL) return (size_t)std::stoul(value.substr(2), 0, 16);
+	else if (type == TOKEN_TYPE_OCT_LITERAL) return (size_t)std::stoul(value.substr(tolower(value[1]) == 'o' ? 2 : 1), 0, 8);
+	else if (type == TOKEN_TYPE_BIN_LITERAL) return (size_t)std::stoul(value.substr(2), 0, 2);
+	else if (type == TOKEN_TYPE_DEC_LITERAL) return (size_t)std::stoul(value, 0);
+
+	return std::string::npos;
+}
+
+ptrdiff_t Dark::GetLong(const Token token) {
+	size_t type = token.GetType();
+	std::string value = token.GetValue();
+	if (value[0] == '+') return (ptrdiff_t)GetUlong(token);
+
+	if (type == TOKEN_TYPE_HEX_LITERAL) return (ptrdiff_t)std::stol(value.substr(2), 0, 16);
+	else if (type == TOKEN_TYPE_OCT_LITERAL) return (ptrdiff_t)std::stol(value.substr(tolower(value[1]) == 'o' ? 2 : 1), 0, 8);
+	else if (type == TOKEN_TYPE_BIN_LITERAL) return (ptrdiff_t)std::stol(value.substr(2), 0, 2);
+	else if (type == TOKEN_TYPE_DEC_LITERAL) return (ptrdiff_t)std::stol(value, 0);
+
+	return std::string::npos;
+}
